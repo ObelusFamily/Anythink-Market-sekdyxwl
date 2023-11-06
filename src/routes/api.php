@@ -17,3 +17,41 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('ping_mongo', function (Request  $request) {    
+    $connection = DB::connection('mongodb');
+
+    $msg = 'MongoDB is accessible!';
+
+    try {  
+        $connection->command(['ping' => 1]);  
+    } catch (Exception  $e) {  
+        $msg = 'MongoDB is not accessible. Error: ' . $e->getMessage();
+    }
+
+    return ['msg' => $msg];
+});
+
+Route::get('find_native', function (Request  $request) {
+    $mongodbquery = [ "title" => "One Week" ];                
+    $mdb_collection = DB::connection('mongodb')->getCollection('reels');                
+  
+    $mdb_bsondoc= $mdb_collection->findOne( $mongodbquery );                 
+  
+    return ['msg' => 'executed', 'bsondoc' => $mdb_bsondoc];
+});
+
+
+Route::get('drama', function (Request $request) {
+    $mongodbquery = [
+        "genres" => "Drama",
+        'year' => 1921,
+    ];
+
+    $mdb_collection = DB::connection('mongodb')->collection('reels');
+
+    // Use the where method to filter documents and then count them
+    $mdb_bsondoc = $mdb_collection->where($mongodbquery)->count();
+
+    return ['msg' => 'executed', 'bsondoc' => $mdb_bsondoc];
+});
